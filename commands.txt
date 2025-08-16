@@ -1,0 +1,6 @@
+pick up the red cube and place it on top of blue cube
+pick up the blue cube and place it on the table
+pick up the red cube and place it on the table
+pick up the blue cube and place it on top of red cube
+pick up the red cube and place it next to blue cube
+pick up the blue cube and place it next to red cube

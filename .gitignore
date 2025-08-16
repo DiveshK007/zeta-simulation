@@ -1,0 +1,9 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+# General outputs (keep only curated artifacts)
+outputs/

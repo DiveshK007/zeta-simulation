@@ -1,0 +1,7 @@
+﻿numpy>=1.26
+pandas>=2.0
+matplotlib>=3.8
+opencv-python>=4.8
+pybullet>=3.2
+sentence-transformers>=3.0
+openai==0.28.1

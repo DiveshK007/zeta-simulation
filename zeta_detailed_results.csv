@@ -1,0 +1,13 @@
+method,task,success,used_constraint,execution_time
+ZETA_Full,pick up the red cube and place it on top of blue cube,True,True,14.733939170837402
+ZETA_Full,pick up the blue cube and place it on the table,True,False,8.011208772659302
+ZETA_Full,pick up the green cube and rotate it,True,True,15.04219913482666
+ZeST_Baseline,pick up the red cube and place it on top of blue cube,True,True,6.570343971252441
+ZeST_Baseline,pick up the blue cube and place it on the table,True,True,6.9638214111328125
+ZeST_Baseline,pick up the green cube and rotate it,True,True,12.519672870635986
+SayCan_Baseline,pick up the red cube and place it on top of blue cube,True,True,12.853752851486206
+SayCan_Baseline,pick up the blue cube and place it on the table,True,True,6.380982160568237
+SayCan_Baseline,pick up the green cube and rotate it,True,True,12.187398910522461
+ZETA_NoFeedback,pick up the red cube and place it on top of blue cube,True,True,12.91124701499939
+ZETA_NoFeedback,pick up the blue cube and place it on the table,True,False,6.860835075378418
+ZETA_NoFeedback,pick up the green cube and rotate it,True,True,13.747402429580688
