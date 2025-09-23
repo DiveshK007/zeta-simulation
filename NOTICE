@@ -1,0 +1,40 @@
+Third-party components and their common licenses
+
+This project includes or references third-party packages. This NOTICE lists those
+packages and their commonly associated licenses for legal hygiene. This is not a
+legal audit; confirm individual package licenses before redistribution.
+
+Dependencies (from requirements.txt):
+
+- numpy: BSD-style
+- pandas: BSD-style
+- matplotlib: PSF-style / BSD
+- scipy: BSD-style
+- opencv-python: BSD-style / Apache 2.0 (bindings)
+- torch / torchvision: BSD + other
+- ultralytics (YOLOv8): Apache-2.0 or similar (check package)
+- segment-anything (SAM): Apache-2.0
+- pybullet: zlib or BSD-like (check package)
+- transforms3d: MIT or BSD
+- casadi: LGPL or commercial (check package)
+- sentence-transformers: Apache-2.0
+- openai: MIT or similar (check package)
+- transformers (Hugging Face): Apache-2.0
+- pddlpy: MIT or BSD (check package)
+- py-trees: MIT
+- behavior3: MIT or similar
+- safety-gym: Apache-2.0
+- gymnasium: MIT or Apache-2.0
+- tensorboard: Apache-2.0
+- nvidia-omniverse: proprietary (NVIDIA-specific licensing)
+- pytwin: check package license
+- zarr: BSD or MIT
+- wandb: Apache-2.0
+- ray: Apache-2.0
+- pytest: MIT
+- black: MIT
+
+If you plan to redistribute this repository or any binaries, review each package's
+license for compatibility and attribution requirements.
+
+Contact: divesh@example.com
