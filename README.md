@@ -15,6 +15,19 @@ This repo keeps plots/CSVs; heavy simulation libs are not installed in CI.
 ## License
 This project is proprietary and confidential. All rights reserved.
 
+## Permission requests
+Permission to use, copy, or contribute to this repository must be requested in writing.
+Contact: divesh@example.com
+
+When requesting permission, please provide:
+- Your name and organization
+- Intended use (run, modify, distribute, or contribute)
+- Time period and distribution scope (if any)
+- Any related agreements or NDAs
+
+Permission requests will be processed manually; do not assume permission until you receive
+an explicit written approval from the repository owner.
+
 ## Quickstart (Windows PowerShell)
 ```powershell
 python -m venv .venv
