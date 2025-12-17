@@ -17,7 +17,7 @@ This project is proprietary and confidential. All rights reserved.
 
 ## Permission requests
 Permission to use, copy, or contribute to this repository must be requested in writing.
-Contact: divesh@example.com
+Contact: diveshkumar.s007@gmail.com
 
 When requesting permission, please provide:
 - Your name and organization
