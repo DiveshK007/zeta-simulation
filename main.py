@@ -2,7 +2,7 @@ import pybullet as p
 import pybullet_data
 import math
 import time
-import openai
+import os
 import json
 import numpy as np
 import cv2
@@ -11,17 +11,46 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sentence_transformers import SentenceTransformer
 
+# Try to import OpenAI - handle both old and new API versions
+try:
+    from openai import OpenAI
+    OPENAI_NEW_API = True
+except ImportError:
+    try:
+        import openai
+        OPENAI_NEW_API = False
+    except ImportError:
+        OPENAI_NEW_API = None
+        print("Warning: OpenAI library not found. LLM features will be disabled.")
+
 # -----------------------------
 # CONFIGURATION
 # -----------------------------
-openai.api_key = "YOU'RE API KEY HERE"  # Replace with your API key
+# Get API key from environment variable or use None
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if OPENAI_API_KEY and OPENAI_NEW_API:
+    openai_client = OpenAI(api_key=OPENAI_API_KEY)
+elif OPENAI_API_KEY and not OPENAI_NEW_API:
+    openai.api_key = OPENAI_API_KEY
+    openai_client = None
+else:
+    openai_client = None
+    print("Warning: OPENAI_API_KEY environment variable not set. LLM features will be disabled.")
 
 # ZETA Framework Configuration
+from zeta import ZETAPipeline, WorldModel, SafetyMonitor, AdaptiveLearningModule
+
 ENABLE_ZETA_SCORING = True
 ENABLE_VISUAL_GROUNDING = True
 ENABLE_AFFORDANCE = True
 ENABLE_FEEDBACK_LOOP = True
 USE_CONSTRAINT_FALLBACK = True
+
+# Initialize ZETA components
+world_model = WorldModel()
+safety_monitor = SafetyMonitor()
+learning_module = AdaptiveLearningModule(state_dim=512, action_dim=7)  # 7 DOF for Panda
+pipeline = ZETAPipeline()
 
 # -----------------------------
 # METRICS COLLECTOR
@@ -214,7 +243,24 @@ class ZETARobot:
         # Initialize sentence transformer for embeddings
         print("Loading CLIP model for visual-language grounding...")
         try:
-            self.embedder = SentenceTransformer('clip-ViT-B-32')
+            # Try different CLIP model names
+            model_names = [
+                'sentence-transformers/clip-ViT-B-32',
+                'clip-ViT-B-32',
+                'all-MiniLM-L6-v2'  # Fallback to a smaller model
+            ]
+            self.embedder = None
+            for model_name in model_names:
+                try:
+                    self.embedder = SentenceTransformer(model_name)
+                    print(f"Successfully loaded model: {model_name}")
+                    break
+                except Exception as e:
+                    print(f"Failed to load {model_name}: {e}")
+                    continue
+            
+            if self.embedder is None:
+                raise Exception("Could not load any CLIP model")
             self.use_real_embeddings = True
         except Exception as e:
             print(f"Warning: Could not load CLIP model. Using simulated embeddings. Error: {e}")
@@ -364,13 +410,31 @@ class ZETARobot:
             # Capture image
             img = self.get_camera_image()
             
-            # Generate embedding directly
-            embedding = self.embedder.encode(img)
+            # Convert numpy array to PIL Image for CLIP
+            from PIL import Image
+            # Ensure image is uint8 and in correct range
+            if img.dtype != np.uint8:
+                img = (img * 255).astype(np.uint8) if img.max() <= 1.0 else img.astype(np.uint8)
             
-            return embedding
+            pil_img = Image.fromarray(img)
+            
+            # Generate embedding - CLIP models can encode images directly
+            embedding = self.embedder.encode(pil_img, convert_to_numpy=True)
+            
+            # Ensure it's a numpy array
+            if not isinstance(embedding, np.ndarray):
+                embedding = np.array(embedding)
+            
+            return embedding.flatten()
         except Exception as e:
             print(f"Warning: Failed to generate real embedding. Using simulated. Error: {e}")
-            return np.random.randn(512)
+            # Return simulated embedding as fallback
+            embedding = np.zeros(512)
+            for i, (name, obj) in enumerate(self.objects.items()):
+                if i < 170:
+                    pos, _ = p.getBasePositionAndOrientation(obj['id'])
+                    embedding[i*3:(i+1)*3] = pos
+            return embedding / (np.linalg.norm(embedding) + 1e-8)
     
     def get_text_embedding(self, text):
         """Generate text embedding using CLIP"""
@@ -388,10 +452,24 @@ class ZETARobot:
             return embedding / (np.linalg.norm(embedding) + 1e-8)
         
         try:
-            return self.embedder.encode(text)
+            embedding = self.embedder.encode(text, convert_to_numpy=True)
+            # Ensure it's a numpy array
+            if not isinstance(embedding, np.ndarray):
+                embedding = np.array(embedding)
+            return embedding.flatten()
         except Exception as e:
             print(f"Warning: Failed to generate text embedding. Using simulated. Error: {e}")
-            return np.random.randn(512)
+            # Return simulated embedding as fallback
+            embedding = np.zeros(512)
+            keywords = {
+                'red': 0, 'blue': 1, 'green': 2,
+                'cube': 3, 'pick': 4, 'place': 5,
+                'top': 6, 'table': 7, 'next': 8
+            }
+            for word, idx in keywords.items():
+                if word in text.lower() and idx < 50:
+                    embedding[idx * 10] = 1.0
+            return embedding / (np.linalg.norm(embedding) + 1e-8)
     
     def calculate_zeta_score(self, skill_name, subgoal_text):
         """Calculate ZETA score using paper formula"""
@@ -833,18 +911,36 @@ class ZETALLM:
            return plan
        
        # Call OpenAI if not cached
+       if OPENAI_NEW_API is None or openai_client is None:
+           print("LLM not available - using cached plan only")
+           return []
+       
        try:
-           response = openai.ChatCompletion.create(
-               model="gpt-3.5-turbo",
-               messages=[
-                   {"role": "system", "content": self.system_prompt},
-                   {"role": "user", "content": instruction}
-               ],
-               temperature=0,
-               max_tokens=200
-           )
+           if OPENAI_NEW_API:
+               # New OpenAI API (v1.0+)
+               response = openai_client.chat.completions.create(
+                   model="gpt-3.5-turbo",
+                   messages=[
+                       {"role": "system", "content": self.system_prompt},
+                       {"role": "user", "content": instruction}
+                   ],
+                   temperature=0,
+                   max_tokens=200
+               )
+               plan_str = response.choices[0].message.content.strip()
+           else:
+               # Old OpenAI API (v0.28.1)
+               response = openai.ChatCompletion.create(
+                   model="gpt-3.5-turbo",
+                   messages=[
+                       {"role": "system", "content": self.system_prompt},
+                       {"role": "user", "content": instruction}
+                   ],
+                   temperature=0,
+                   max_tokens=200
+               )
+               plan_str = response.choices[0].message.content.strip()
            
-           plan_str = response.choices[0].message.content.strip()
            plan = json.loads(plan_str)
            print(f"Plan: {json.dumps(plan, indent=2)}")
            return plan

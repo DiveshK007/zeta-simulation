@@ -1,7 +1,48 @@
-﻿numpy>=1.26
-pandas>=2.0
-matplotlib>=3.8
-opencv-python>=4.8
+﻿# Core Scientific Computing
+numpy>=1.24.0
+pandas>=1.5.0
+matplotlib>=3.7.0
+scipy>=1.10.0
+
+# Computer Vision & Perception
+opencv-python>=4.8.0
+torch>=2.0.0,<3.0.0
+torchvision>=0.15.0
+ultralytics~=8.0.0  # YOLOv8
+segment-anything~=1.0
+
+# Robotics & Simulation
 pybullet>=3.2
+transforms3d>=0.4
+# ROS packages should be installed separately via rosdep
+
+# Motion Planning & Control
+casadi>=3.6  # For MPC
+# Advanced planning packages should be installed separately
+
+# AI & Language Models
 sentence-transformers>=3.0
 openai==0.28.1
+torch>=2.0
+transformers>=4.30
+
+# Task Planning & Decision Making
+pddlpy>=0.3
+py-trees>=2.2
+behavior3>=0.1
+
+# Safety & Monitoring
+safety-gym>=0.2
+gymnasium>=0.29
+tensorboard>=2.13
+
+# World Modeling & Digital Twin
+nvidia-omniverse>=2.0
+pytwin>=1.0
+
+# Utilities & Tools
+zarr>=2.16        # Efficient array storage
+wandb>=0.15       # Experiment tracking
+ray>=2.6          # Distributed computing
+pytest>=7.4       # Testing
+black>=23.9       # Code formatting

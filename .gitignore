@@ -7,3 +7,13 @@ venv/
 .ipynb_checkpoints/
 # General outputs (keep only curated artifacts)
 outputs/
+
+# macOS
+.DS_Store
+
+# Generated results (can be regenerated)
+zeta_*.png
+zeta_*.csv
+
+# Conda/miniconda installers
+miniconda.sh
